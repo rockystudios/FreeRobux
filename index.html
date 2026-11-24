@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Offline HTML Live Editor</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, sans-serif;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      background: #111827;
+      color: #f9fafb;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.6rem 1rem;
+      background: #1f2937;
+      border-bottom: 1px solid #374151;
+      gap: 0.5rem;
+    }
+    header h1 {
+      font-size: 1rem;
+      margin: 0;
+      font-weight: 600;
+    }
+    .actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+    button {
+      background: #2563eb;
+      color: white;
+      border: none;
+      padding: 0.4rem 0.75rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+    button:hover { background: #1d4ed8; }
+    button.secondary { background: #374151; }
+    button.secondary:hover { background: #4b5563; }
+    .workspace {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      flex: 1;
+      min-height: 0;
+    }
+    textarea {
+      width: 100%;
+      height: 100%;
+      resize: none;
+      border: none;
+      outline: none;
+      padding: 1rem;
+      background: #0f172a;
+      color: #e2e8f0;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 14px;
+      line-height: 1.5;
+      border-right: 1px solid #374151;
+    }
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: #ffffff;
+    }
+    @media (max-width: 768px) {
+      .workspace {
+        grid-template-columns: 1fr;
+        grid-template-rows: 1fr 1fr;
+      }
+      textarea {
+        border-right: none;
+        border-bottom: 1px solid #374151;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Offline HTML Live Editor</h1>
+    <div class="actions">
+      <button class="secondary" onclick="resetCode()">Reset</button>
+      <button onclick="downloadCode()">Download .html</button>
+    </div>
+  </header>
+  <div class="workspace">
+    <textarea id="editor" spellcheck="false"></textarea>
+    <iframe id="preview" sandbox="allow-scripts"></iframe>
+  </div>
+
+  <script>
+    const STORAGE_KEY = "offline_html_editor_code_v1";
+    const DEFAULT_CODE = `<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 2rem;
+      background: #f0f9ff;
+      color: #0f172a;
+    }
+    .card {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Hello, Offline World!</h1>
+    <p>Edit the HTML on the left and watch this preview update immediately.</p>
+  </div>
+</body>
+</html>`;
+
+    const editor = document.getElementById("editor");
+    const preview = document.getElementById("preview");
+
+    function renderPreview() {
+      preview.srcdoc = editor.value;
+      try {
+        localStorage.setItem(STORAGE_KEY, editor.value);
+      } catch (e) {}
+    }
+
+    function resetCode() {
+      editor.value = DEFAULT_CODE;
+      renderPreview();
+    }
+
+    function downloadCode() {
+      const blob = new Blob([editor.value], { type: "text/html" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "my-page.html";
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    let saved = null;
+    try {
+      saved = localStorage.getItem(STORAGE_KEY);
+    } catch (e) {}
+
+    editor.value = saved !== null ? saved : DEFAULT_CODE;
+    editor.addEventListener("input", renderPreview);
+    renderPreview();
+  </script>
+</body>
+</html>
